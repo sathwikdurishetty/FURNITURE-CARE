@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generate Guide | FurnitureCare.ai</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Background Meshes -->
+  <div class="mesh-glow glow-purple-mesh"></div>
+  <div class="mesh-glow glow-cyan-mesh"></div>
+
+  <!-- Header -->
+  <header></header>
+
+  <main class="container">
+    <div style="margin-bottom: 30px;">
+      <h1 style="font-size: 2.2rem; margin-bottom: 5px;">Care Guide Architect</h1>
+      <p style="color: var(--text-secondary);">Register an asset to instantly generate precision AI care algorithms</p>
+    </div>
+
+    <!-- Form & Preview Split Layout -->
+    <div class="split-layout">
+      
+      <!-- Left Side: Inputs Form -->
+      <div class="glass-card">
+        <h3 style="font-size: 1.3rem; margin-bottom: 25px; border-bottom: 1px solid var(--card-border); padding-bottom: 15px;">
+          Asset Profile Details
+        </h3>
+        
+        <form id="guide-form" onsubmit="generateAIGuide(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="furnitureName">Furniture Name</label>
+              <input type="text" id="furnitureName" placeholder="e.g. Living Room Chester Sofa" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="furnitureType">Furniture Type</label>
+              <select id="furnitureType" required>
+                <!-- Prefilled dynamically -->
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="material">Material Composition</label>
+              <select id="material" required>
+                <!-- Prefilled dynamically -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="brand">Brand Manufacturer</label>
+              <select id="brand" required>
+                <!-- Prefilled dynamically -->
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="age">Asset Age</label>
+              <select id="age" required>
+                <!-- Prefilled dynamically -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Location</label>
+              <div class="segment-control" id="location-segment">
+                <button type="button" class="segment-btn active" data-value="Indoor">Indoor</button>
+                <button type="button" class="segment-btn" data-value="Outdoor">Outdoor</button>
+              </div>
+              <input type="hidden" id="indoorOutdoor" value="Indoor">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="condition">Current Condition</label>
+            <select id="condition" required>
+              <!-- Prefilled dynamically -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="problemDescription">Specific Damage / Wear Issue (Optional)</label>
+            <textarea id="problemDescription" rows="3" placeholder="Describe wood cracks, leather scaling, cloth stains, structural looseness..."></textarea>
+          </div>
+
+          <!-- Image Drag and Drop -->
+          <div class="form-group">
+            <label>Upload Asset Photo (Optional)</label>
+            <div class="dropzone" id="dropzone">
+              <span class="dropzone-icon">📸</span>
+              <p style="font-size: 0.85rem; font-weight: 600;">Drag and drop image here or click to browse</p>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">Supports PNG, JPG, WEBP (Max 5MB)</p>
+              <input type="file" id="imageInput" style="display: none;" accept="image/*">
+              <img id="imagePreview" class="dropzone-preview" alt="Preview">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 14px; font-size: 1rem;">
+            🚀 Compute Care Matrix
+          </button>
+        </form>
+      </div>
+
+      <!-- Right Side: Live AI Processing Monitor -->
+      <div class="glass-card preview-pane" id="preview-pane">
+        
+        <!-- Placeholder State -->
+        <div class="preview-placeholder" id="preview-placeholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+          <div class="engine-status-circle">
+            <span style="font-size: 2.2rem; filter: drop-shadow(0 0 10px rgba(124,58,237,0.5));">🧠</span>
+          </div>
+          <h3 style="font-size: 1.4rem; color: white; margin-bottom: 8px;">AURA AI Engine</h3>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); max-width: 320px; line-height: 1.5; margin-bottom: 15px;">
+            Awaiting parameters. Fill out the details form on the left to begin guide formulation.
+          </p>
+          <span class="engine-badge-green">Ready</span>
+        </div>
+
+        <!-- Processing State -->
+        <div class="processing-ai" id="processing-state">
+          <div class="ai-spinner"></div>
+          <h3 style="background: linear-gradient(135deg, var(--primary-start), var(--primary-end)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Generating Diagnostics...</h3>
+          <p id="processing-log" style="font-size: 0.85rem; color: var(--text-secondary); max-width: 300px;">
+            Initializing Gemini LLM matrix...
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+  <script>
+    let base64Image = '';
+
+    // Auth validation
+    document.addEventListener('DOMContentLoaded', () => {
+      session.checkAuth('user');
+      loadPrefills();
+      setupDropzone();
+
+      // Segment button listeners
+      const segmentBtns = $$('#location-segment .segment-btn');
+      segmentBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          segmentBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          $('#indoorOutdoor').value = btn.getAttribute('data-value');
+        });
+      });
+    });
+
+    // Fetch prefilled data
+    async function loadPrefills() {
+      try {
+        const response = await fetch('/api/prefills');
+        const data = await response.json();
+
+        // Populate selects
+        populateSelect($('#furnitureType'), data.furnitureTypes);
+        populateSelect($('#material'), data.materials);
+        populateSelect($('#brand'), data.brands);
+        populateSelect($('#age'), data.ages);
+        populateSelect($('#condition'), data.conditions);
+
+      } catch (err) {
+        showToast('Failed to load prefilled options.', 'danger');
+      }
+    }
+
+    function populateSelect(selectEl, items) {
+      selectEl.innerHTML = items.map(item => `<option value="${item}">${item}</option>`).join('');
+    }
+
+    // Setup drag & drop files
+    function setupDropzone() {
+      const zone = $('#dropzone');
+      const input = $('#imageInput');
+      const preview = $('#imagePreview');
+
+      zone.addEventListener('click', () => input.click());
+
+      zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        zone.classList.add('dragover');
+      });
+
+      zone.addEventListener('dragleave', () => {
+        zone.classList.remove('dragover');
+      });
+
+      zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) {
+          handleFile(e.dataTransfer.files[0]);
+        }
+      });
+
+      input.addEventListener('change', () => {
+        if (input.files.length > 0) {
+          handleFile(input.files[0]);
+        }
+      });
+
+      function handleFile(file) {
+        if (!file.type.startsWith('image/')) {
+          showToast('Only image files are supported.', 'danger');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          base64Image = e.target.result;
+          preview.src = base64Image;
+          preview.style.display = 'block';
+          // Hide text labels inside dropzone
+          $$('#dropzone p, #dropzone span').forEach(el => el.style.display = 'none');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Call dynamic generation API
+    async function generateAIGuide(e) {
+      e.preventDefault();
+      
+      const user = session.getUser();
+      if (!user) return;
+
+      const payload = {
+        furnitureName: $('#furnitureName').value.trim(),
+        furnitureType: $('#furnitureType').value,
+        material: $('#material').value,
+        brand: $('#brand').value,
+        age: $('#age').value,
+        indoorOutdoor: $('#indoorOutdoor').value,
+        condition: $('#condition').value,
+        problemDescription: $('#problemDescription').value.trim(),
+        imageUrl: base64Image,
+        userId: user.id
+      };
+
+      // Toggle UI State
+      $('#preview-placeholder').style.display = 'none';
+      $('#processing-state').style.display = 'flex';
+
+      const logs = [
+        'Connecting to Gemini LLM clusters...',
+        'Parsing furniture fabric grain chemistry...',
+        'Compiling maintenance scheduling calendars...',
+        'Constructing circular health status matrices...',
+        'Finalizing corporate reports...'
+      ];
+
+      let logIndex = 0;
+      const logTimer = setInterval(() => {
+        if (logIndex < logs.length) {
+          $('#processing-log').innerText = logs[logIndex++];
+        }
+      }, 1500);
+
+      try {
+        const response = await fetch('/api/guides/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        clearInterval(logTimer);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Server error generating guide.');
+        }
+
+        showToast('Guide generated successfully!', 'success');
+        
+        setTimeout(() => {
+          window.location.href = `report.html?id=${data.id}`;
+        }, 1000);
+
+      } catch (err) {
+        clearInterval(logTimer);
+        showToast(err.message || 'AI Generation failed. Check network.', 'danger');
+        $('#preview-placeholder').style.display = 'flex';
+        $('#processing-state').style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>

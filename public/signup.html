@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Request Registration | FurnitureCare.ai</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Background Meshes -->
+  <div class="mesh-glow glow-purple-mesh"></div>
+  <div class="mesh-glow glow-cyan-mesh"></div>
+
+  <!-- Header -->
+  <header></header>
+
+  <div class="auth-wrapper">
+    <div class="glass-card auth-card" style="text-align: center;">
+      <!-- Main Register State -->
+      <div id="register-state">
+        <h2 style="font-size: 1.8rem; margin-bottom: 8px;">Registration</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 30px;">Request access to the corporate workspace</p>
+
+        <!-- Alert Message Box -->
+        <div id="signup-alert" class="alert alert-danger"></div>
+
+        <form id="signup-form" onsubmit="handleSignup(event)">
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" placeholder="John Doe" required>
+          </div>
+
+          <div class="form-group">
+            <label for="username">Username (Phone or Email)</label>
+            <input type="text" id="username" placeholder="e.g. employee@company.com" required>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" placeholder="e.g. +91 83090 35966">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirm</label>
+              <input type="password" id="confirmPassword" placeholder="••••••••" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 20px; padding: 12px;">Submit Request</button>
+        </form>
+
+        <p style="font-size: 0.85rem; color: var(--text-secondary);">
+          Already requested? <a href="login.html" style="color: var(--primary-end); text-decoration: none; font-weight: 600;">Sign In</a>
+        </p>
+      </div>
+
+      <!-- Pending Success State -->
+      <div id="success-state" style="display: none;">
+        <span style="font-size: 3.5rem; display: block; margin-bottom: 20px;">⏳</span>
+        <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: var(--warning);">Request Pending</h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 30px; line-height: 1.6;">
+          Your registration request was successfully submitted to the administrator. Access will be unlocked once approved.
+        </p>
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 15px; border-radius: 12px; font-size: 0.85rem; text-align: left; color: var(--text-secondary); margin-bottom: 30px;">
+          <strong>Workspace Policy:</strong> Only authenticated personnel inside the corporate domain can explore diagnostics.
+        </div>
+        <a href="login.html" class="btn btn-secondary" style="width: 100%;">Return to Login</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      session.checkAuth();
+    });
+
+    async function handleSignup(e) {
+      e.preventDefault();
+      
+      const fullName = $('#fullName').value.trim();
+      const username = $('#username').value.trim();
+      const phone = $('#phone').value.trim();
+      const password = $('#password').value;
+      const confirmPassword = $('#confirmPassword').value;
+      
+      const alertBox = $('#signup-alert');
+      alertBox.style.display = 'none';
+
+      if (password !== confirmPassword) {
+        alertBox.innerText = 'Passwords do not match.';
+        alertBox.style.display = 'block';
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ fullName, username, phone, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          alertBox.innerText = data.error || 'Signup failed.';
+          alertBox.style.display = 'block';
+          return;
+        }
+
+        // Show pending validation state
+        $('#register-state').style.display = 'none';
+        $('#success-state').style.display = 'block';
+        showToast('Registration requested successfully!', 'success');
+
+      } catch (err) {
+        alertBox.innerText = 'Connection error. Please try again.';
+        alertBox.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

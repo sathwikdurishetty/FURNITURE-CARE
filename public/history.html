@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Care Report History | FurnitureCare.ai</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Background Meshes -->
+  <div class="mesh-glow glow-purple-mesh"></div>
+  <div class="mesh-glow glow-cyan-mesh"></div>
+
+  <!-- Header -->
+  <header></header>
+
+  <main class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+      <div>
+        <h1 style="font-size: 2.2rem; margin-bottom: 5px;">Report Repository</h1>
+        <p style="color: var(--text-secondary);">Filter, search, audit, and clean historical care records</p>
+      </div>
+      <a href="generate.html" class="btn btn-primary">🛋️ New Diagnostics</a>
+    </div>
+
+    <!-- Filters and Searches Card -->
+    <div class="glass-card" style="padding: 20px; margin-bottom: 30px;">
+      <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px; align-items: end;">
+        
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="search-input">Search Assets</label>
+          <input type="text" id="search-input" placeholder="Search by name, brand..." oninput="filterGuides()">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="filter-type">Furniture Type</label>
+          <select id="filter-type" onchange="filterGuides()">
+            <option value="ALL">All Types</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="filter-material">Material</label>
+          <select id="filter-material" onchange="filterGuides()">
+            <option value="ALL">All Materials</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="sort-select">Sort By</label>
+          <select id="sort-select" onchange="filterGuides()">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="name-asc">Name (A-Z)</option>
+            <option value="health-desc">Health (High-Low)</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- History Data Table -->
+    <div class="glass-card" style="padding: 0;">
+      <div class="table-wrapper">
+        <table class="premium-table">
+          <thead>
+            <tr>
+              <th>Furniture Name</th>
+              <th>Type</th>
+              <th>Material</th>
+              <th>Condition</th>
+              <th>Health Index</th>
+              <th>Generated Date</th>
+              <th style="text-align: right; padding-right: 30px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody">
+            <!-- Dynamically populated -->
+            <tr>
+              <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 50px 0;">
+                Loading historical database records...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+  <script>
+    let allGuides = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      session.checkAuth('user');
+      loadHistory();
+    });
+
+    async function loadHistory() {
+      const user = session.getUser();
+      if (!user) return;
+
+      try {
+        const response = await fetch(`/api/guides?userId=${user.id}`);
+        allGuides = await response.json();
+        
+        // Build dynamic filters
+        populateFilterDropdowns(allGuides);
+
+        // Render table
+        filterGuides();
+
+      } catch (err) {
+        showToast('Failed to load history list.', 'danger');
+      }
+    }
+
+    function populateFilterDropdowns(guides) {
+      const typeSelect = $('#filter-type');
+      const matSelect = $('#filter-material');
+
+      const types = new Set();
+      const materials = new Set();
+
+      guides.forEach(g => {
+        types.add(g.furnitureType);
+        materials.add(g.material);
+      });
+
+      types.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.innerText = t;
+        typeSelect.appendChild(opt);
+      });
+
+      materials.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.innerText = m;
+        matSelect.appendChild(opt);
+      });
+    }
+
+    function filterGuides() {
+      const query = $('#search-input').value.toLowerCase();
+      const filterType = $('#filter-type').value;
+      const filterMat = $('#filter-material').value;
+      const sortVal = $('#sort-select').value;
+
+      let filtered = [...allGuides];
+
+      // Text query filter
+      if (query) {
+        filtered = filtered.filter(g => 
+          g.furnitureName.toLowerCase().includes(query) || 
+          g.brand.toLowerCase().includes(query) || 
+          g.problemDescription.toLowerCase().includes(query)
+        );
+      }
+
+      // Dropdown filters
+      if (filterType !== 'ALL') {
+        filtered = filtered.filter(g => g.furnitureType === filterType);
+      }
+
+      if (filterMat !== 'ALL') {
+        filtered = filtered.filter(g => g.material === filterMat);
+      }
+
+      // Sorting
+      if (sortVal === 'newest') {
+        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      } else if (sortVal === 'oldest') {
+        filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      } else if (sortVal === 'name-asc') {
+        filtered.sort((a, b) => a.furnitureName.localeCompare(b.furnitureName));
+      } else if (sortVal === 'health-desc') {
+        filtered.sort((a, b) => (b.report.healthScore || 0) - (a.report.healthScore || 0));
+      }
+
+      renderTable(filtered);
+    }
+
+    function renderTable(guides) {
+      const tbody = $('#history-tbody');
+      tbody.innerHTML = '';
+
+      if (guides.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 50px 0;">
+              No matching records found.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      guides.forEach(guide => {
+        const score = guide.report ? guide.report.healthScore : 80;
+        let healthColor = 'var(--success)';
+        if (score < 50) healthColor = 'var(--danger)';
+        else if (score < 80) healthColor = 'var(--warning)';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td style="font-weight: 600;">${guide.furnitureName}</td>
+          <td>${guide.furnitureType}</td>
+          <td>${guide.material}</td>
+          <td>${guide.condition}</td>
+          <td><strong style="color: ${healthColor}">${score}%</strong></td>
+          <td>${new Date(guide.createdAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</td>
+          <td style="text-align: right; padding-right: 20px;">
+            <div style="display: inline-flex; gap: 8px;">
+              <a href="report.html?id=${guide.id}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">View</a>
+              <button onclick="deleteGuide('${guide.id}')" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; border-color: rgba(239,68,68,0.2); color: var(--danger);">Delete</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    async function deleteGuide(id) {
+      if (!confirm('Are you sure you want to delete this care record? This action is permanent.')) return;
+
+      try {
+        const response = await fetch(`/api/guides/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (!response.ok) throw new Error();
+
+        showToast('Guide record deleted successfully.');
+        allGuides = allGuides.filter(g => g.id !== id);
+        filterGuides();
+
+      } catch (err) {
+        showToast('Failed to delete report.', 'danger');
+      }
+    }
+  </script>
+</body>
+</html>

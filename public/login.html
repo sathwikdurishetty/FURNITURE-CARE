@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | FurnitureCare.ai</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Background Meshes -->
+  <div class="mesh-glow glow-purple-mesh"></div>
+  <div class="mesh-glow glow-cyan-mesh"></div>
+
+  <!-- Header -->
+  <header></header>
+
+  <div class="auth-wrapper">
+    <div class="glass-card auth-card" style="text-align: center;">
+      <h2 style="font-size: 1.8rem; margin-bottom: 8px;">Welcome Back</h2>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 30px;">Sign in to your private corporate workspace</p>
+
+      <!-- Alert Message Box -->
+      <div id="login-alert" class="alert alert-danger"></div>
+
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="username">Phone or Email Address</label>
+          <input type="text" id="username" placeholder="e.g. 8309035966 or employee@company.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+
+        <div class="form-check" style="justify-content: space-between;">
+          <label style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="remember"> Remember Me
+          </label>
+          <a href="#" onclick="showToast('Password reset is disabled for this private system.', 'danger')" style="color: var(--primary-end); text-decoration: none;">Forgot?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 20px; padding: 12px;">Sign In</button>
+      </form>
+
+      <p style="font-size: 0.85rem; color: var(--text-secondary);">
+        Need access? <a href="signup.html" style="color: var(--primary-end); text-decoration: none; font-weight: 600;">Request Registration</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+  <script>
+    // Ensure user isn't logged in already
+    document.addEventListener('DOMContentLoaded', () => {
+      session.checkAuth();
+    });
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      
+      const username = $('#username').value.trim();
+      const password = $('#password').value.trim();
+      const alertBox = $('#login-alert');
+      
+      alertBox.style.display = 'none';
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          alertBox.innerText = data.error || 'Login failed.';
+          alertBox.style.display = 'block';
+          return;
+        }
+
+        // Store user session details
+        session.setUser(data);
+        showToast('Login successful! Redirecting...', 'success');
+
+        setTimeout(() => {
+          if (data.role === 'admin') {
+            window.location.href = 'admin.html';
+          } else {
+            window.location.href = 'dashboard.html';
+          }
+        }, 1200);
+
+      } catch (err) {
+        alertBox.innerText = 'Server connection error. Please try again.';
+        alertBox.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

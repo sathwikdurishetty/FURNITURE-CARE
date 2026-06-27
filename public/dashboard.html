@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard | FurnitureCare.ai</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Background Meshes -->
+  <div class="mesh-glow glow-purple-mesh"></div>
+  <div class="mesh-glow glow-cyan-mesh"></div>
+
+  <!-- Header -->
+  <header></header>
+
+  <main class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+      <div>
+        <h1 style="font-size: 2.2rem; margin-bottom: 5px;">Workspace Dashboard</h1>
+        <p style="color: var(--text-secondary);">Manage diagnostics and track furniture asset maintenance schedules</p>
+      </div>
+      <a href="generate.html" class="btn btn-primary">🛋️ Generate Guide</a>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="dashboard-grid">
+      <div class="glass-card stat-card">
+        <div class="stat-title">Total Reports Generated</div>
+        <div class="stat-value" id="dash-reports">0</div>
+        <p style="font-size: 0.75rem; color: var(--text-muted);">Updated instantly</p>
+      </div>
+      <div class="glass-card stat-card">
+        <div class="stat-title">Avg Furniture Health Score</div>
+        <div class="stat-value" id="dash-health">100%</div>
+        <p style="font-size: 0.75rem; color: var(--text-muted);">Overall asset status</p>
+      </div>
+      <div class="glass-card stat-card">
+        <div class="stat-title">Active Maintenance Plans</div>
+        <div class="stat-value" id="dash-plans">0</div>
+        <p style="font-size: 0.75rem; color: var(--text-muted);">Schedules in progress</p>
+      </div>
+      <div class="glass-card stat-card">
+        <div class="stat-title">Current Workspace Health</div>
+        <div class="stat-value" style="color: var(--success);">Optimal</div>
+        <p style="font-size: 0.75rem; color: var(--text-muted);">Zero active threats</p>
+      </div>
+    </div>
+
+    <!-- Middle Split Content: Recent Guides & Notifications/Recommendations -->
+    <div class="split-layout" style="margin-top: 40px; grid-template-columns: 1.2fr 0.8fr;">
+      
+      <!-- Left Side: Recent Guides -->
+      <div class="glass-card">
+        <h3 style="font-size: 1.3rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+          <span>📋</span> Recent Care Reports
+        </h3>
+        
+        <div id="guides-list-container" class="table-wrapper">
+          <table class="premium-table">
+            <thead>
+              <tr>
+                <th>Furniture Name</th>
+                <th>Type</th>
+                <th>Material</th>
+                <th>Health</th>
+                <th>Created</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="guides-tbody">
+              <!-- Dynamically populated -->
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px 0;">
+                  No reports generated yet. Get started by clicking 'Generate Guide'.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right Side: Notifications & AI Recommendations -->
+      <div style="display: flex; flex-direction: column; gap: 30px;">
+        
+        <!-- AI Recommendations -->
+        <div class="glass-card">
+          <h3 style="font-size: 1.2rem; margin-bottom: 15px; color: var(--primary-end); display: flex; align-items: center; gap: 8px;">
+            <span>💡</span> AI Recommendations
+          </h3>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 15px;" id="recommendations-list">
+            <li style="font-size: 0.85rem; color: var(--text-secondary); border-left: 2px solid var(--primary-mid); padding-left: 12px;">
+              <strong>Seasonal Leather Care:</strong> Summer humidity requires light ventilation. Apply protective cream to leather items to ward off damp molds.
+            </li>
+            <li style="font-size: 0.85rem; color: var(--text-secondary); border-left: 2px solid var(--primary-end); padding-left: 12px;">
+              <strong>Wood Hydration Check:</strong> Check wood furniture located near heating registers; dry air causes cracking.
+            </li>
+          </ul>
+        </div>
+
+        <!-- Notification Center -->
+        <div class="glass-card">
+          <h3 style="font-size: 1.2rem; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+            <span>🔔</span> System Notifications
+          </h3>
+          <div style="display: flex; flex-direction: column; gap: 12px;" id="notifications-container">
+            <div style="padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.02); font-size: 0.8rem; color: var(--text-secondary);">
+              <strong>System Notice:</strong> Welcome to your organization's care platform. Guide approvals are now instant.
+            </div>
+          </div>
+        </div>
+
+        <!-- Corporate Headquarters Location -->
+        <div class="glass-card">
+          <h3 style="font-size: 1.2rem; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; color: var(--primary-end);">
+            <span>📍</span> Corporate HQ
+          </h3>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; display: flex; flex-direction: column; gap: 10px;">
+            <p><strong>Office:</strong> Karmanghat, Hyderabad, India</p>
+            <p><strong>Direct Helpline:</strong> +91 83090 35966</p>
+            <a href="https://maps.app.goo.gl/71KWfeDJfMBUtareA?g_st=ac" target="_blank" class="btn btn-secondary" style="border-radius: 8px; padding: 6px 12px; font-size: 0.8rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              🧭 View Google Map
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+  <script>
+    // Auth Check
+    document.addEventListener('DOMContentLoaded', () => {
+      session.checkAuth('user');
+      loadDashboardData();
+    });
+
+    async function loadDashboardData() {
+      const user = session.getUser();
+      if (!user) return;
+
+      try {
+        const response = await fetch(`/api/guides?userId=${user.id}`);
+        const guides = await response.json();
+        
+        if (guides.length === 0) return;
+
+        // Render stats
+        animateCounter($('#dash-reports'), guides.length, '', 1000);
+        
+        let sumHealth = 0;
+        guides.forEach(g => sumHealth += (g.report && g.report.healthScore) ? g.report.healthScore : 80);
+        const avgHealth = Math.round(sumHealth / guides.length);
+        animateCounter($('#dash-health'), avgHealth, '%', 1000);
+        
+        // Active plans (items with schedule tasks)
+        const activePlans = guides.reduce((acc, g) => acc + (g.report && g.report.maintenanceSchedule ? g.report.maintenanceSchedule.length : 0), 0);
+        animateCounter($('#dash-plans'), activePlans, '', 1000);
+
+        // Populate table
+        const tbody = $('#guides-tbody');
+        tbody.innerHTML = '';
+
+        guides.slice(0, 5).forEach(guide => {
+          const score = guide.report ? guide.report.healthScore : 80;
+          let healthColor = 'var(--success)';
+          if (score < 50) healthColor = 'var(--danger)';
+          else if (score < 80) healthColor = 'var(--warning)';
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td style="font-weight: 600;">${guide.furnitureName}</td>
+            <td>${guide.furnitureType}</td>
+            <td>${guide.material}</td>
+            <td><strong style="color: ${healthColor}">${score}%</strong></td>
+            <td>${new Date(guide.createdAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</td>
+            <td>
+              <a href="report.html?id=${guide.id}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">View Report</a>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+
+        // Add dynamic notification of new reports
+        const notifContainer = $('#notifications-container');
+        if (guides.length > 0) {
+          const latest = guides[0];
+          const item = document.createElement('div');
+          item.style.cssText = `
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(16,185,129,0.05);
+            border-left: 3px solid var(--success);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+          `;
+          item.innerHTML = `<strong>Report Ready:</strong> Guide for ${latest.furnitureName} is active.`;
+          notifContainer.appendChild(item);
+        }
+
+      } catch (err) {
+        showToast('Failed to fetch dashboard reports.', 'danger');
+      }
+    }
+  </script>
+</body>
+</html>
