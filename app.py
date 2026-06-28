@@ -309,7 +309,10 @@ def generate_guide():
         payload = {
             "contents": [{
                 "parts": parts
-            }]
+            }],
+            "generationConfig": {
+                "responseMimeType": "application/json"
+            }
         }
         
         # 30s timeout
@@ -319,9 +322,14 @@ def generate_guide():
         resp_json = response.json()
         raw_text = resp_json['candidates'][0]['content']['parts'][0]['text'].strip()
         
-        # Strip potential markdown wrapper
+        # Strip potential markdown wrapper more robustly
         if raw_text.startswith('```'):
-            raw_text = raw_text.replace('```json', '').replace('```', '').strip()
+            lines = raw_text.split('\n')
+            if lines[0].startswith('```'):
+                lines = lines[1:]
+            if lines and lines[-1].startswith('```'):
+                lines = lines[:-1]
+            raw_text = '\n'.join(lines).strip()
             
         ai_report = json.loads(raw_text)
     except Exception as e:

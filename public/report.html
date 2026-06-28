@@ -18,10 +18,10 @@
   <main class="container">
     
     <!-- Top actions bar -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <div class="report-top-bar">
       <a href="dashboard.html" class="btn-back-premium">⬅️ Back to Dashboard</a>
       
-      <div class="report-actions">
+      <div class="report-actions" style="margin-top: 0;">
         <button onclick="copyReportText()" class="btn btn-secondary">📋 Copy Text</button>
         <button onclick="exportDocx()" class="btn btn-secondary">📝 Export DOCX</button>
         <button onclick="window.print()" class="btn btn-primary">🖨️ PDF / Print</button>
@@ -30,7 +30,7 @@
     </div>
 
     <!-- Main Report Container -->
-    <div class="glass-card" style="padding: 40px;" id="printable-report">
+    <div class="glass-card report-card" id="printable-report">
       
       <!-- Report Header info -->
       <div class="report-header">
@@ -54,7 +54,7 @@
       </div>
 
       <!-- Report Metadata Overview -->
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 18px; border-radius: 12px; margin-bottom: 40px;" id="metadata-bar">
+      <div class="report-metadata-bar" id="metadata-bar">
         <div>
           <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Material</span>
           <strong id="meta-material">---</strong>
@@ -79,7 +79,7 @@
           <span>🔍</span> AI Vision Detection Audit
         </h3>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <div class="audit-grid">
           <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
             <div>
               <span style="font-size: 0.75rem; color: var(--text-muted); display: block; text-transform: uppercase;">Detected Furniture Category</span>
@@ -145,7 +145,7 @@
           </div>
 
           <!-- Dos & Don'ts Split -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px;">
+          <div class="dos-donts-grid">
             <div class="report-section" style="background: rgba(16,185,129,0.03); border: 1px solid rgba(16,185,129,0.15); padding: 20px; border-radius: 12px;">
               <h3 style="color: var(--success);">✅ Keep (Dos)</h3>
               <ul id="dos-list" style="margin-top: 10px;"></ul>

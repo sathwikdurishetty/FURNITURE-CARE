@@ -8,14 +8,14 @@ const $$ = selector => document.querySelectorAll(selector);
 // Session Management
 const session = {
   getUser() {
-    const user = localStorage.getItem('furniture_user');
+    const user = sessionStorage.getItem('furniture_user');
     return user ? JSON.parse(user) : null;
   },
   setUser(user) {
-    localStorage.setItem('furniture_user', JSON.stringify(user));
+    sessionStorage.setItem('furniture_user', JSON.stringify(user));
   },
   clear() {
-    localStorage.removeItem('furniture_user');
+    sessionStorage.removeItem('furniture_user');
   },
   checkAuth(requiredRole = null) {
     const user = this.getUser();
@@ -165,6 +165,7 @@ function setupGlobalHeader() {
   
   let navHTML = '';
   let actionsHTML = '';
+  let mobileActionsHTML = '';
 
   if (user) {
     if (user.role === 'admin') {
@@ -182,6 +183,14 @@ function setupGlobalHeader() {
         </div>
         <button class="btn btn-secondary theme-toggle">☀️</button>
         <div id="logout-btn" class="logout-btn-circle" title="Logout">📤</div>
+      `;
+      mobileActionsHTML = `
+        <div class="user-badge" style="margin-bottom: 5px;">
+          <span>👤</span>
+          <strong>${user.fullName}</strong>
+        </div>
+        <button class="btn btn-secondary theme-toggle mobile-theme-btn" style="width: 100%; border-radius: 12px; padding: 12px; margin-bottom: 8px;">Toggle Theme ☀️</button>
+        <button id="logout-btn-mobile" class="btn btn-danger mobile-logout-btn" style="width: 100%; border-radius: 12px; padding: 12px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; font-weight: 700; cursor: pointer;">Logout 📤</button>
       `;
     } else {
       const dashActive = (currentPage === 'dashboard.html') ? 'class="active"' : '';
@@ -203,6 +212,14 @@ function setupGlobalHeader() {
         <button class="btn btn-secondary theme-toggle">☀️</button>
         <div id="logout-btn" class="logout-btn-circle" title="Logout">📤</div>
       `;
+      mobileActionsHTML = `
+        <div class="user-badge" style="margin-bottom: 5px;">
+          <span>👤</span>
+          <strong>${user.fullName}</strong>
+        </div>
+        <button class="btn btn-secondary theme-toggle mobile-theme-btn" style="width: 100%; border-radius: 12px; padding: 12px; margin-bottom: 8px;">Toggle Theme ☀️</button>
+        <button id="logout-btn-mobile" class="btn btn-danger mobile-logout-btn" style="width: 100%; border-radius: 12px; padding: 12px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; font-weight: 700; cursor: pointer;">Logout 📤</button>
+      `;
     }
   } else {
     navHTML = `
@@ -214,6 +231,11 @@ function setupGlobalHeader() {
       <a href="login.html" class="btn btn-secondary" style="border-radius: 12px; padding: 8px 18px;">Sign In</a>
       <a href="signup.html" class="btn btn-primary" style="border-radius: 12px; padding: 8px 18px;">Start Free</a>
     `;
+    mobileActionsHTML = `
+      <button class="btn btn-secondary theme-toggle mobile-theme-btn" style="width: 100%; border-radius: 12px; padding: 12px; margin-bottom: 8px;">Toggle Theme ☀️</button>
+      <a href="login.html" class="btn btn-secondary" style="width: 100%; border-radius: 12px; padding: 12px; text-align: center; margin-bottom: 8px;">Sign In</a>
+      <a href="signup.html" class="btn btn-primary" style="width: 100%; border-radius: 12px; padding: 12px; text-align: center;">Start Free</a>
+    `;
   }
 
   header.innerHTML = `
@@ -221,23 +243,67 @@ function setupGlobalHeader() {
       <div class="logo-icon">🛋️</div>
       <div class="logo-text">AURA<span style="font-size: 0.95rem; font-weight: 700; margin-left: 2px;">AI</span></div>
     </div>
-    <nav>
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle Navigation">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <nav class="nav-menu" id="nav-menu">
       ${navHTML}
+      <div class="mobile-only-actions">
+        ${mobileActionsHTML}
+      </div>
     </nav>
-    <div class="actions">
+    <div class="actions desktop-only-actions">
       ${actionsHTML}
     </div>
   `;
 
-  // Bind logout action
+  // Bind logout actions
+  const handleLogout = () => {
+    session.clear();
+    showToast('Logged out successfully.');
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 1000);
+  };
+
   const logoutBtn = $('#logout-btn');
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      session.clear();
-      showToast('Logged out successfully.');
-      setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 1000);
+    logoutBtn.addEventListener('click', handleLogout);
+  }
+
+  const logoutBtnMobile = $('#logout-btn-mobile');
+  if (logoutBtnMobile) {
+    logoutBtnMobile.addEventListener('click', handleLogout);
+  }
+
+  // Hamburger Menu Toggle behavior
+  const menuToggle = $('#mobile-menu-toggle');
+  const navMenu = $('#nav-menu');
+  
+  if (menuToggle && navMenu) {
+    menuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menuToggle.classList.toggle('active');
+      navMenu.classList.toggle('active');
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+        menuToggle.classList.remove('active');
+        navMenu.classList.remove('active');
+      }
+    });
+
+    // Close menu when clicking a link inside it
+    const navLinks = navMenu.querySelectorAll('a');
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        menuToggle.classList.remove('active');
+        navMenu.classList.remove('active');
+      });
     });
   }
 
